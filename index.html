@@ -35,52 +35,40 @@
     <div id="paintings"></div>
 
     <script>
-        // Your API credentials
-        const accessCode = 'f92ebbea8b114670';
-        const secretCode = 'ac539abfd8ed1c76';
-
-        // Function to get the session key
-        async function getSessionKey() {
-            const response = await fetch(`https://www.wikiart.org/en/Api/2/login?accessCode=${accessCode}&secretCode=${secretCode}`);
-            const data = await response.json();
-            return data.SessionKey;
-        }
-
-        // Function to get the most viewed paintings
-        async function getMostViewedPaintings(sessionKey) {
-            const response = await fetch(`https://www.wikiart.org/en/api/2/MostViewedPaintings?authSessionKey=${sessionKey}`);
-            const data = await response.json();
-            return data.data; // Array of paintings
-        }
-
-        // Function to display paintings
-        function displayPaintings(paintings) {
-            const paintingsContainer = document.getElementById('paintings');
-            paintings.forEach(painting => {
-                const paintingDiv = document.createElement('div');
-                paintingDiv.classList.add('painting');
-                paintingDiv.innerHTML = `
-                    <img src="${painting.image}" alt="${painting.title}">
-                    <div class="title">${painting.title}</div>
-                    <div class="artist">by ${painting.artistName} (${painting.completitionYear})</div>
-                `;
-                paintingsContainer.appendChild(paintingDiv);
-            });
-        }
-
-        // Main function to execute the flow
-        async function main() {
+        // Function to fetch and display the paintings
+        async function fetchAndDisplayPaintings() {
             try {
-                const sessionKey = await getSessionKey();
-                const paintings = await getMostViewedPaintings(sessionKey);
-                displayPaintings(paintings);
+                // Step 1: Get the Session Key
+                const accessCode = 'f92ebbea8b114670';
+                const secretCode = 'ac539abfd8ed1c76';
+                const loginResponse = await fetch(`https://www.wikiart.org/en/Api/2/login?accessCode=${accessCode}&secretCode=${secretCode}`);
+                const loginData = await loginResponse.json();
+                const sessionKey = loginData.SessionKey;
+
+                // Step 2: Fetch Most Viewed Paintings using the Session Key
+                const paintingsResponse = await fetch(`https://www.wikiart.org/en/api/2/MostViewedPaintings?authSessionKey=${sessionKey}`);
+                const paintingsData = await paintingsResponse.json();
+
+                // Step 3: Display the Paintings
+                const paintingsContainer = document.getElementById('paintings');
+                paintingsData.data.forEach(painting => {
+                    const paintingDiv = document.createElement('div');
+                    paintingDiv.classList.add('painting');
+                    paintingDiv.innerHTML = `
+                        <img src="${painting.image}" alt="${painting.title}">
+                        <div class="title">${painting.title}</div>
+                        <div class="artist">by ${painting.artistName} (${painting.completitionYear})</div>
+                    `;
+                    paintingsContainer.appendChild(paintingDiv);
+                });
             } catch (error) {
-                console.error('Error fetching paintings:', error);
+                console.error('Error:', error);
+                alert('Failed to load paintings. Please try again later.');
             }
         }
 
-        // Execute the main function when the page loads
-        main();
+        // Execute the function to fetch and display paintings
+        fetchAndDisplayPaintings();
     </script>
 </body>
 </html>
