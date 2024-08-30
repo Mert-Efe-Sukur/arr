@@ -35,40 +35,63 @@
     <div id="paintings"></div>
 
     <script>
-        // Function to fetch and display the paintings
-        async function fetchAndDisplayPaintings() {
-            try {
-                // Step 1: Get the Session Key
-                const accessCode = 'f92ebbea8b114670';
-                const secretCode = 'ac539abfd8ed1c76';
-                const loginResponse = await fetch(`https://www.wikiart.org/en/Api/2/login?accessCode=${accessCode}&secretCode=${secretCode}`);
-                const loginData = await loginResponse.json();
-                const sessionKey = loginData.SessionKey;
-
-                // Step 2: Fetch Most Viewed Paintings using the Session Key
-                const paintingsResponse = await fetch(`https://www.wikiart.org/en/api/2/MostViewedPaintings?authSessionKey=${sessionKey}`);
-                const paintingsData = await paintingsResponse.json();
-
-                // Step 3: Display the Paintings
-                const paintingsContainer = document.getElementById('paintings');
-                paintingsData.data.forEach(painting => {
-                    const paintingDiv = document.createElement('div');
-                    paintingDiv.classList.add('painting');
-                    paintingDiv.innerHTML = `
-                        <img src="${painting.image}" alt="${painting.title}">
-                        <div class="title">${painting.title}</div>
-                        <div class="artist">by ${painting.artistName} (${painting.completitionYear})</div>
-                    `;
-                    paintingsContainer.appendChild(paintingDiv);
-                });
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to load paintings. Please try again later.');
-            }
+        // Step 1: Get the Session Key using XMLHttpRequest
+        function getSessionKey(callback) {
+            const accessCode = 'f92ebbea8b114670';
+            const secretCode = 'ac539abfd8ed1c76';
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `https://www.wikiart.org/en/Api/2/login?accessCode=${accessCode}&secretCode=${secretCode}`, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    callback(response.SessionKey);
+                } else {
+                    alert('Failed to get session key');
+                    console.error('Error getting session key:', xhr.status, xhr.statusText);
+                }
+            };
+            xhr.onerror = function() {
+                alert('Error during network request');
+            };
+            xhr.send();
         }
 
-        // Execute the function to fetch and display paintings
-        fetchAndDisplayPaintings();
+        // Step 2: Fetch Most Viewed Paintings using the Session Key
+        function getMostViewedPaintings(sessionKey) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `https://www.wikiart.org/en/api/2/MostViewedPaintings?authSessionKey=${sessionKey}`, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    displayPaintings(response.data);
+                } else {
+                    alert('Failed to load paintings');
+                    console.error('Error fetching paintings:', xhr.status, xhr.statusText);
+                }
+            };
+            xhr.onerror = function() {
+                alert('Error during network request');
+            };
+            xhr.send();
+        }
+
+        // Step 3: Display the Paintings
+        function displayPaintings(paintings) {
+            const paintingsContainer = document.getElementById('paintings');
+            paintings.forEach(painting => {
+                const paintingDiv = document.createElement('div');
+                paintingDiv.classList.add('painting');
+                paintingDiv.innerHTML = `
+                    <img src="${painting.image}" alt="${painting.title}">
+                    <div class="title">${painting.title}</div>
+                    <div class="artist">by ${painting.artistName} (${painting.completitionYear})</div>
+                `;
+                paintingsContainer.appendChild(paintingDiv);
+            });
+        }
+
+        // Execute the flow to get and display paintings
+        getSessionKey(getMostViewedPaintings);
     </script>
 </body>
 </html>
