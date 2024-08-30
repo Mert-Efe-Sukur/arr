@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Most Viewed Paintings</title>
+    <style>
+        .painting {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px;
+            display: inline-block;
+            width: 300px;
+            text-align: center;
+        }
+
+        .painting img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .title {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .artist {
+            font-style: italic;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>Most Viewed Paintings</h1>
+    <div id="paintings"></div>
+
+    <script>
+        // Your API credentials
+        const accessCode = 'f92ebbea8b114670';
+        const secretCode = 'ac539abfd8ed1c76';
+
+        // Function to get the session key
+        async function getSessionKey() {
+            const response = await fetch(`https://www.wikiart.org/en/Api/2/login?accessCode=${accessCode}&secretCode=${secretCode}`);
+            const data = await response.json();
+            return data.SessionKey;
+        }
+
+        // Function to get the most viewed paintings
+        async function getMostViewedPaintings(sessionKey) {
+            const response = await fetch(`https://www.wikiart.org/en/api/2/MostViewedPaintings?authSessionKey=${sessionKey}`);
+            const data = await response.json();
+            return data.data; // Array of paintings
+        }
+
+        // Function to display paintings
+        function displayPaintings(paintings) {
+            const paintingsContainer = document.getElementById('paintings');
+            paintings.forEach(painting => {
+                const paintingDiv = document.createElement('div');
+                paintingDiv.classList.add('painting');
+                paintingDiv.innerHTML = `
+                    <img src="${painting.image}" alt="${painting.title}">
+                    <div class="title">${painting.title}</div>
+                    <div class="artist">by ${painting.artistName} (${painting.completitionYear})</div>
+                `;
+                paintingsContainer.appendChild(paintingDiv);
+            });
+        }
+
+        // Main function to execute the flow
+        async function main() {
+            try {
+                const sessionKey = await getSessionKey();
+                const paintings = await getMostViewedPaintings(sessionKey);
+                displayPaintings(paintings);
+            } catch (error) {
+                console.error('Error fetching paintings:', error);
+            }
+        }
+
+        // Execute the main function when the page loads
+        main();
+    </script>
+</body>
+</html>
