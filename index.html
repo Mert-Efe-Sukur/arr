@@ -3,95 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Most Viewed Paintings</title>
+    <title>Daily Painting</title>
     <style>
-        .painting {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin: 10px;
-            display: inline-block;
-            width: 300px;
-            text-align: center;
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
         }
-
-        .painting img {
+        img {
             max-width: 100%;
             height: auto;
-        }
-
-        .title {
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .artist {
-            font-style: italic;
-            color: #555;
+            border: 1px solid #ddd;
         }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const paintings = [
+                'https://uploads5.wikiart.org/00475/images/leonardo-da-vinci/0000136308-og.JPG!Large.JPG',
+                'https://uploads3.wikiart.org/00475/images/vincent-van-gogh/the-starry-night-1889.jpg!Large.jpg',
+                'https://uploads8.wikiart.org/images/henri-de-toulouse-lautrec/in-bed-the-kiss-1892.jpg!Large.jpg',
+                'https://uploads6.wikiart.org/images/sandro-botticelli/the-birth-of-venus-1485(1).jpg!Large.jpg',
+                'https://uploads6.wikiart.org/00475/images/raphael/1-xvkpn0qm3eiqpzivkggfea.jpg!Large.jpg',
+                // Add more URLs as needed
+            ];
+
+            const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+            const baseDate = '2024-01-01'; // Set the start date
+            const baseDateObj = new Date(baseDate);
+            const todayDateObj = new Date(today);
+            const dayDifference = Math.floor((todayDateObj - baseDateObj) / (1000 * 60 * 60 * 24));
+            const paintingIndex = dayDifference % paintings.length;
+
+            let lastIndex = localStorage.getItem('lastIndex');
+            if (lastIndex === null || lastIndex != paintingIndex) {
+                // Show today's painting if not shown yet
+                document.getElementById('painting').src = paintings[paintingIndex];
+                localStorage.setItem('lastIndex', paintingIndex);
+            } else {
+                // Show the previous painting if today's hasn't been shown
+                const previousIndex = (paintingIndex - 1 + paintings.length) % paintings.length;
+                document.getElementById('painting').src = paintings[previousIndex];
+            }
+        });
+    </script>
 </head>
 <body>
-    <h1>Most Viewed Paintings</h1>
-    <div id="paintings"></div>
-
-    <script>
-        // Step 1: Get the Session Key using XMLHttpRequest
-        function getSessionKey(callback) {
-            const accessCode = 'e92b9e5c9caf4337';
-            const secretCode = '9ad7641b945ee6c1';
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', `https://www.wikiart.org/en/Api/2/login?accessCode=${accessCode}&secretCode=${secretCode}`, true);
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    const response = JSON.parse(xhr.responseText);
-                    callback(response.SessionKey);
-                } else {
-                    alert('Failed to get session key');
-                    console.error('Error getting session key:', xhr.status, xhr.statusText);
-                }
-            };
-            xhr.onerror = function() {
-                alert('Error during network request');
-            };
-            xhr.send();
-        }
-
-        // Step 2: Fetch Most Viewed Paintings using the Session Key
-        function getMostViewedPaintings(sessionKey) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', `https://www.wikiart.org/en/api/2/MostViewedPaintings?authSessionKey=${sessionKey}`, true);
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    const response = JSON.parse(xhr.responseText);
-                    displayPaintings(response.data);
-                } else {
-                    alert('Failed to load paintings');
-                    console.error('Error fetching paintings:', xhr.status, xhr.statusText);
-                }
-            };
-            xhr.onerror = function() {
-                alert('Error during network request');
-            };
-            xhr.send();
-        }
-
-        // Step 3: Display the Paintings
-        function displayPaintings(paintings) {
-            const paintingsContainer = document.getElementById('paintings');
-            paintings.forEach(painting => {
-                const paintingDiv = document.createElement('div');
-                paintingDiv.classList.add('painting');
-                paintingDiv.innerHTML = `
-                    <img src="${painting.image}" alt="${painting.title}">
-                    <div class="title">${painting.title}</div>
-                    <div class="artist">by ${painting.artistName} (${painting.completitionYear})</div>
-                `;
-                paintingsContainer.appendChild(paintingDiv);
-            });
-        }
-
-        // Execute the flow to get and display paintings
-        getSessionKey(getMostViewedPaintings);
-    </script>
+    <img id="painting" alt="Daily Painting">
 </body>
 </html>
